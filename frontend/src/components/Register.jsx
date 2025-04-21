@@ -1,39 +1,47 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { registerUser } from "../api/auth"; // Adjust the import path as needed
+import { registerUser } from "../api/auth";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 import "./login.css";
 
 const Signup = () => {
+  // State variables for capturing user input and error messages
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [showText, setShowText] = useState(true);
+  const [showPassword, setShowPassword] = useState(false); // State for password visibility toggle
   const [error, setError] = useState(""); // State to hold error messages
+
+  // Hook for navigation after successful registration
   const navigate = useNavigate();
 
+  // Handle password change and toggle password visibility based on length
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
-    setShowText(e.target.value.length === 0);
   };
 
+  // Handle form submission for registration
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError(""); // Clear previous errors
+    e.preventDefault(); // Prevent default form submission behavior
+    setError(""); // Clear previous error messages
 
     try {
+      // Send a POST request to register the user
       const response = await registerUser({
         username,
         email,
         password,
       });
 
+      // If the response contains an error, display it
       if (response.error) {
         setError(response.error);
       } else {
+        // If successful, navigate the user to the login page
         navigate("/login", { replace: true });
       }
     } catch (err) {
-      // Check if the error has a response from the server
       if (err.response && err.response.data && err.response.data.message) {
         setError(err.response.data.message);
       } else {
@@ -46,6 +54,7 @@ const Signup = () => {
     <div className="login">
       <h4>Sign Up</h4>
       <form onSubmit={handleSubmit}>
+        {/* Username input field */}
         <label htmlFor="username" className="input_label">
           Username
         </label>
@@ -61,6 +70,7 @@ const Signup = () => {
           />
         </div>
 
+        {/* Email input field */}
         <label htmlFor="email" className="input_label">
           Email
         </label>
@@ -76,12 +86,13 @@ const Signup = () => {
           />
         </div>
 
+        {/* Password input field with toggle visibility */}
         <label htmlFor="password" className="input_label">
           Password
         </label>
-        <div className="text_area">
+        <div className="text_area" style={{ position: "relative" }}>
           <input
-            type={showText ? "text" : "password"}
+            type={showPassword ? "text" : "password"} // Toggle password visibility based on showPassword state
             id="password"
             name="password"
             value={password}
@@ -89,12 +100,29 @@ const Signup = () => {
             className="text_input"
             required
           />
+          {/* FontAwesome Eye Icon for toggling password visibility */}
+          <FontAwesomeIcon
+            icon={showPassword ? faEyeSlash : faEye}
+            onClick={() => setShowPassword(!showPassword)}
+            style={{
+              position: "absolute",
+              right: "10px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              cursor: "pointer",
+              color: "#999",
+            }}
+          />
         </div>
 
+        {/* Display error message if any */}
         {error && <div className="error-message">{error}</div>}
 
+        {/* Submit button to trigger form submission */}
         <input type="submit" value="SIGN UP" className="btn" />
       </form>
+
+      {/* Link to navigate to the login page if user already has an account */}
       <span className="link_line">
         Already have an account?
         <Link className="link" to="/login">

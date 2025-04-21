@@ -6,24 +6,30 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons";
 
 const Login = () => {
+  // Destructuring login function from AuthContext for user authentication
   const { login } = useContext(AuthContext);
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // For navigation after successful login
 
+  // State variables to store email, password, visibility of password, and error messages
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
+  // Handle the form submission
   const handleSubmit = async (e) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent page refresh on form submission
     setError(""); // Reset error message
 
+    // login with email and password
     const response = await login({ email, password });
 
+    // If error occurs, display error message
     if (response.error) {
       console.log(response);
       setError("Invalid email or password.");
     } else {
+      // On successful login, redirect user to the home page
       navigate("/", { replace: true });
     }
   };
@@ -32,6 +38,7 @@ const Login = () => {
     <div className="login">
       <h4>Login</h4>
       <form onSubmit={handleSubmit}>
+        {/* Email input field */}
         <label htmlFor="email" className="input_label">
           Email
         </label>
@@ -47,6 +54,7 @@ const Login = () => {
           />
         </div>
 
+        {/* Password input field with toggle visibility */}
         <label htmlFor="password" className="input_label">
           Password
         </label>
@@ -60,6 +68,7 @@ const Login = () => {
             className="text_input"
             required
           />
+          {/* Toggle password visibility icon */}
           <FontAwesomeIcon
             icon={showPassword ? faEyeSlash : faEye}
             onClick={() => setShowPassword(!showPassword)}
@@ -74,10 +83,14 @@ const Login = () => {
           />
         </div>
 
+        {/* Display error message if any */}
         {error && <div className="error-message">{error}</div>}
 
+        {/* Submit button for login */}
         <input type="submit" value="LOGIN" className="btn" />
       </form>
+
+      {/* Link to redirect user to the registration page if they don't have an account */}
       <span className="link_line">
         Don’t have an account?
         <Link className="link" to="/register">

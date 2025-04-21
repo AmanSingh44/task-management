@@ -1,4 +1,3 @@
-// pages/Home.js
 import React, { useState, useContext, useEffect } from "react";
 import { Link } from "react-router-dom";
 import AuthContext from "../hooks/index";
@@ -6,17 +5,19 @@ import { getTasks, addTask, deleteTask } from "../api/task";
 import "./home.css";
 
 const Home = () => {
+  // Extract user and logout function from context
   const { user, logout } = useContext(AuthContext);
-  const [tasks, setTasks] = useState([
-    // Your initial tasks here
-  ]);
-  console.log(user);
+
+  // State for holding tasks
+  const [tasks, setTasks] = useState([]);
+
+  // Fetch tasks when component mounts
   useEffect(() => {
     const fetchTasks = async () => {
       try {
         const response = await getTasks();
         if (response && response.data) {
-          setTasks(response.data);
+          setTasks(response.data); // Update state with fetched tasks
         } else {
           console.error(
             "Failed to fetch tasks:",
@@ -31,25 +32,24 @@ const Home = () => {
     fetchTasks();
   }, []);
 
+  // States for new task input
   const [newTitle, setNewTitle] = useState("");
   const [newDesc, setNewDesc] = useState("");
-  const [modalTask, setModalTask] = useState(null);
+  const [modalTask, setModalTask] = useState(null); // State for modal task details
 
+  // Handler for adding a new task
   const handleAddTask = async (e) => {
     e.preventDefault();
     if (!newTitle.trim()) return;
 
-    const newTask = {
-      title: newTitle,
-      description: newDesc,
-    };
+    const newTask = { title: newTitle, description: newDesc };
 
     try {
       const response = await addTask(newTask);
       if (response && response.data) {
         // Prepend the newly added task to the task list
         setTasks([response.data, ...tasks]);
-        setNewTitle("");
+        setNewTitle(""); // Clear input fields
         setNewDesc("");
       } else {
         console.error("Failed to add task:", response.error || "Unknown error");
@@ -59,6 +59,7 @@ const Home = () => {
     }
   };
 
+  // Handler for deleting a task
   const handleDelete = async (id) => {
     try {
       const response = await deleteTask(id);
@@ -66,7 +67,7 @@ const Home = () => {
         // Refetch tasks after deletion
         const tasksResponse = await getTasks();
         if (tasksResponse && tasksResponse.data) {
-          setTasks(tasksResponse.data);
+          setTasks(tasksResponse.data); // Update task list after deletion
         } else {
           console.error(
             "Failed to fetch tasks:",
@@ -86,6 +87,7 @@ const Home = () => {
 
   return (
     <div className="home-body">
+      {/* Navigation bar with conditional rendering based on user authentication */}
       <nav className="navbar">
         <Link to="/" className="nav-item">
           Home
@@ -101,15 +103,21 @@ const Home = () => {
         )}
       </nav>
 
+      {/* Main content area, blurred when user is not logged in */}
       <div className={`main-wrapper ${!user ? "blurred" : ""}`}>
+        {/* Task list section */}
         <div className="task-section">
-          <h2>Task List</h2>
+          <h2>
+            {user?.username
+              ? `${user.username.split(" ")[0]}'s Task List` //Ectracting name from user context
+              : "Task List"}
+          </h2>
           <div className="task-scroll">
             {tasks.map((task) => (
               <div
                 key={task.id}
                 className="task-item"
-                onClick={() => setModalTask(task)}
+                onClick={() => setModalTask(task)} // Open task in modal on click
               >
                 <div className="task-title">{task.title}</div>
                 <div className="task-desc">
@@ -117,11 +125,12 @@ const Home = () => {
                     ? task.description.slice(0, 60) + "..."
                     : task.description}
                 </div>
+                {/* Delete button */}
                 <button
                   className="delete-btn"
                   onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(task.id);
+                    e.stopPropagation(); // Prevent modal from opening when clicking delete
+                    handleDelete(task.id); // Call delete handler
                   }}
                 >
                   Delete
@@ -131,6 +140,7 @@ const Home = () => {
           </div>
         </div>
 
+        {/* Task creation section */}
         <div className="add-task-section">
           <h2>Add Task</h2>
           <form onSubmit={handleAddTask}>
@@ -155,18 +165,21 @@ const Home = () => {
         </div>
       </div>
 
+      {/* Overlay message when user is not logged in */}
       {!user && (
         <div className="overlay-message">
           <span>
             Please
             <Link className="link" to="/login">
-              log in
+              {" "}
+              log in{" "}
             </Link>
             to view and manage your tasks.
           </span>
         </div>
       )}
 
+      {/* Modal for viewing task details */}
       {modalTask && (
         <div className="modal-backdrop" onClick={() => setModalTask(null)}>
           <div className="modal-content" onClick={(e) => e.stopPropagation()}>

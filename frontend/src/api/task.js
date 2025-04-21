@@ -1,5 +1,7 @@
+// Import the custom Axios client
 import client from "./client";
 
+// Fetch all tasks for the authenticated user
 export const getTasks = async () => {
   try {
     const { data } = await client.get("/tasks");
@@ -13,6 +15,7 @@ export const getTasks = async () => {
   }
 };
 
+// Add a new task for the authenticated user
 export const addTask = async (task) => {
   try {
     const { data } = await client.post("/tasks", task);
@@ -26,6 +29,7 @@ export const addTask = async (task) => {
   }
 };
 
+// Delete a specific task by its ID for the authenticated user
 export const deleteTask = async (taskId) => {
   try {
     const { data } = await client.delete(`/tasks/${taskId}`);

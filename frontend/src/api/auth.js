@@ -1,5 +1,11 @@
+// Import the pre-configured Axios client
 import client from "./client";
 
+/**
+ * Registers a new user with the provided userInfo.
+ * @param {Object} userInfo - Contains username, email, and password.
+ * @returns {Object} - Response data from server or error object.
+ */
 export const registerUser = async (userInfo) => {
   try {
     const { data } = await client.post("/users/register", userInfo);
@@ -13,6 +19,11 @@ export const registerUser = async (userInfo) => {
   }
 };
 
+/**
+ * Logs in a user using provided credentials.
+ * @param {Object} userInfo - Contains email and password.
+ * @returns {Object} - Response data or error object.
+ */
 export const loginUser = async (userInfo) => {
   try {
     const { data } = await client.post("/users/login", userInfo);
@@ -26,6 +37,10 @@ export const loginUser = async (userInfo) => {
   }
 };
 
+/**
+ * Logs out the currently authenticated user.
+ * @returns {Object} - Response message or error object.
+ */
 export const logoutUser = async () => {
   try {
     const { data } = await client.post("/users/logout");
@@ -38,6 +53,11 @@ export const logoutUser = async () => {
     return { error: error.message || error };
   }
 };
+
+/**
+ * Checks whether the user is currently authenticated.
+ * @returns {Object} - Auth status and user info or error object.
+ */
 export const getIsAuth = async () => {
   try {
     const { data } = await client.get("/users/is-auth");

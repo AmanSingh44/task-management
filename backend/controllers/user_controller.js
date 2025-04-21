@@ -4,24 +4,27 @@ const jwt = require("jsonwebtoken");
 
 const JWT_SECRET = process.env.JWT_SECRET;
 
+// Register a new user
 const register = (req, res) => {
   const body = req.body;
   const { username, email, password } = body;
 
+  // Check if the email already exists
   dbConn.query(
     `SELECT email FROM users WHERE email = "${email}"`,
     (err, results) => {
       if (err) {
+        // Send error response if email check query fails
         res.status(500).json({
           error: "Error while checking existing email",
         });
       } else if (results.length > 0) {
-        // Email already exists
+        // If email already exists, send 400 response
         res.status(400).json({
           error: "Email already in use",
         });
       } else {
-        // Email does not exist, proceed with registration
+        // Password hashing
         let hashedPassword = bcrypt.hashSync(password, 10);
         dbConn.query(
           `INSERT INTO users (username, password, email) VALUES ("${username}", "${hashedPassword}", "${email}")`,
@@ -31,6 +34,7 @@ const register = (req, res) => {
                 error: "Error while inserting data",
               });
             } else {
+              // Send success response on successful registration
               res.status(201).json({
                 message: "User registered successfully",
                 data: result,
@@ -43,26 +47,32 @@ const register = (req, res) => {
   );
 };
 
-// Login
+// Login an existing user
 const login = (req, res) => {
   const body = req.body;
 
+  // Fetch user by email
   dbConn.query(
     `SELECT * FROM users WHERE email = "${body.email}"`,
     (err, result) => {
       if (err) {
         return res.status(500).json({ error: "Database error" });
       }
+
+      // If user not found, return unauthorized
       if (result.length === 0) {
         return res.status(401).json({ error: "Invalid email or password" });
       }
 
       const user = result[0];
+
+      // Compare provided password with hashed password
       const isMatch = bcrypt.compareSync(body.password, user.password);
       if (!isMatch) {
         return res.status(401).json({ error: "Invalid email or password" });
       }
 
+      // Generate JWT token
       const token = jwt.sign(
         {
           id: user.id,
@@ -74,6 +84,7 @@ const login = (req, res) => {
         }
       );
 
+      // Set token in HTTP-only cookie and return success response
       res
         .cookie("token", token, {
           httpOnly: true,
@@ -90,17 +101,15 @@ const login = (req, res) => {
   );
 };
 
+// Logout user by clearing the token cookie
 const logout = (req, res) => {
-  // Clear the 'token' cookie
   res.clearCookie("token", {
     httpOnly: true,
-    path: "/", // Ensure this matches the path used when setting the cookie
+    path: "/", // redirect to home page
   });
 
   return res.status(200).json({ message: "Logout successful" });
 };
-
-module.exports = { logout };
 
 module.exports = {
   register,
